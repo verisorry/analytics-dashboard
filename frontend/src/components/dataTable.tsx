@@ -1,7 +1,9 @@
-import { Table, Button } from "antd";
-import { ClearOutlined } from "@ant-design/icons";
+import { Table, Button, Space, Slider, DatePicker } from "antd";
+import { ClearOutlined, SortAscendingOutlined } from "@ant-design/icons";
 import type { ColumnsType, TableProps } from "antd/es/table";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+
+const { RangePicker } = DatePicker;
 
 type OnChange = NonNullable<TableProps<SettingData>['onChange']>;
 
@@ -16,6 +18,13 @@ interface SettingData {
 interface DataTableProps {
   data: SettingData[];
   loading: boolean;
+}
+
+// Define a type for filter dropdown props
+interface CustomFilterDropdownProps {
+  setSelectedKeys: (keys: React.Key[]) => void;
+  confirm: () => void;
+  clearFilters?: () => void;
 }
 
 export default function DataTable({ 
@@ -44,15 +53,98 @@ export default function DataTable({
     value: name,
   }));
 
-  // Create value range filters
   const valueMin = data.length ? Math.min(...data.map(item => item.applied_value)) : 0;
-  const valueMax = data.length ? Math.max(...data.map(item => item.applied_value)) : 0;
-  
-  const valueRangeFilters = [
-    { text: 'Low', value: 'low' },
-    { text: 'Medium', value: 'medium' },
-    { text: 'High', value: 'high' },
-  ];
+  const valueMax = data.length ? Math.max(...data.map(item => item.applied_value)) : 100;
+
+  const valueFilterDropdown = useCallback(({ setSelectedKeys, confirm, clearFilters }: CustomFilterDropdownProps) => {
+    let currentRange: [number, number] = [valueMin, valueMax];
+    
+    return (
+      <div style={{ padding: 8 }}>
+        <Space direction="vertical" style={{ width: 250 }}>
+          <p>Value Range: {currentRange[0]} - {currentRange[1]}</p>
+          <Slider
+            range
+            min={valueMin}
+            max={valueMax}
+            defaultValue={[valueMin, valueMax]}
+            onChange={(value) => {
+              currentRange = value as [number, number];
+            }}
+            onAfterChange={(value) => {
+              currentRange = value as [number, number];
+              document.getElementById('value-range-display')!.textContent = 
+                `Value Range: ${currentRange[0]} - ${currentRange[1]}`;
+            }}
+          />
+          <p id="value-range-display">Value Range: {valueMin} - {valueMax}</p>
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedKeys([`${currentRange[0]}-${currentRange[1]}`]);
+                confirm();
+              }}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Filter
+            </Button>
+            <Button
+              onClick={() => {
+                clearFilters?.();
+                currentRange = [valueMin, valueMax];
+                document.getElementById('value-range-display')!.textContent = 
+                  `Value Range: ${valueMin} - ${valueMax}`;
+              }}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Reset
+            </Button>
+          </Space>
+        </Space>
+      </div>
+    );
+  }, [valueMin, valueMax]);
+
+  const timeFilterDropdown = useCallback(({ setSelectedKeys, confirm, clearFilters }: CustomFilterDropdownProps) => {
+    return (
+      <div style={{ padding: 8 }}>
+        <Space direction="vertical" style={{ width: 300 }}>
+          <RangePicker
+            showTime
+            onChange={(dates) => {
+              if (dates && dates[0] && dates[1]) {
+                const start = dates[0].unix();
+                const end = dates[1].unix();
+                setSelectedKeys([`${start}-${end}`]);
+              } else {
+                setSelectedKeys([]);
+              }
+            }}
+          />
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => confirm()}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Filter
+            </Button>
+            <Button
+              onClick={() => clearFilters?.()}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Reset
+            </Button>
+          </Space>
+        </Space>
+      </div>
+    );
+  }, []);
 
   const columns: ColumnsType<SettingData> = [
     {
@@ -92,19 +184,12 @@ export default function DataTable({
       title: 'Applied Value',
       dataIndex: 'applied_value',
       key: 'applied_value',
-      filters: valueRangeFilters,
+      filterDropdown: valueFilterDropdown,
       filteredValue: filteredInfo.applied_value || null,
       onFilter: (value, record) => {
-        if (value === 'low') {
-          return record.applied_value <= valueMin + (valueMax - valueMin) / 3;
-        }
-        if (value === 'medium') {
-          const lowerBound = valueMin + (valueMax - valueMin) / 3;
-          const upperBound = valueMin + 2 * (valueMax - valueMin) / 3;
-          return record.applied_value > lowerBound && record.applied_value <= upperBound;
-        }
-        if (value === 'high') {
-          return record.applied_value > valueMin + 2 * (valueMax - valueMin) / 3;
+        if (typeof value === 'string') {
+          const [min, max] = value.split('-').map(Number);
+          return record.applied_value >= min && record.applied_value <= max;
         }
         return true;
       },
@@ -115,6 +200,15 @@ export default function DataTable({
       title: 'Timestamp',
       dataIndex: 'timestamp',
       key: 'timestamp',
+      filterDropdown: timeFilterDropdown,
+      filteredValue: filteredInfo.timestamp || null,
+      onFilter: (value, record) => {
+        if (typeof value === 'string') {
+          const [min, max] = value.split('-').map(Number);
+          return record.timestamp >= min && record.timestamp <= max;
+        }
+        return true;
+      },
       render: (timestamp) => new Date(timestamp * 1000).toLocaleString(),
       sorter: (a, b) => a.timestamp - b.timestamp,
       sortOrder: sortedInfo.columnKey === 'timestamp' ? sortedInfo.order : null,
@@ -131,34 +225,72 @@ export default function DataTable({
     setFilteredInfo({});
   };
 
+  const clearSort = () => {
+    setSortedInfo({});
+  };
+
+  const clearAll = () => {
+    setFilteredInfo({});
+    setSortedInfo({});
+  };
+
   const hasFilters = Object.values(filteredInfo).some(value => value && value.length > 0);
+  const hasSort = sortedInfo.order !== undefined && sortedInfo.columnKey !== undefined;
 
   return (
     <div>
-      {hasFilters && (
-        <div style={{ marginBottom: 16 }}>
-          <Button 
-            onClick={clearFilters} 
-            icon={<ClearOutlined />}
-            style={{
-              borderRadius: 100,
-              backgroundColor: '#FFF1F0',
-              borderColor: '#FF4D4F',
-              color: '#FF4D4F',
-              marginRight: 8
-            }}
-          >
-            Clear Filters
-          </Button>
-        </div>
-      )}
+      <div style={{ marginBottom: 16 }}>
+        <Space>
+          {hasFilters && (
+            <Button 
+              onClick={clearFilters} 
+              icon={<ClearOutlined />}
+              style={{
+                borderRadius: 100,
+                backgroundColor: '#E5EDF3',
+                borderColor: '#5A7EA3',
+                color: '#5A7EA3',
+              }}
+            >
+              Clear Filters
+            </Button>
+          )}
+          
+          {hasSort && (
+            <Button 
+              onClick={clearSort} 
+              icon={<SortAscendingOutlined />}
+              style={{
+                borderRadius: 100,
+                backgroundColor: '#E5EDF3',
+                borderColor: '#5A7EA3',
+                color: '#5A7EA3',
+              }}
+            >
+              Clear Sort
+            </Button>
+          )}
+          
+          {(hasFilters || hasSort) && (
+            <Button 
+              onClick={clearAll}
+              style={{
+                borderRadius: 100,
+              }}
+            >
+              Clear All
+            </Button>
+          )}
+        </Space>
+      </div>
       <Table 
         dataSource={data} 
         columns={columns} 
         loading={loading}
         rowKey={(record) => `${record.fridge_id}-${record.instrument_name}-${record.timestamp}`}
         onChange={onChange}
-        pagination={{ pageSize: 10 }}
+        pagination={{hideOnSinglePage: true}}
+        
       />
     </div>
   );

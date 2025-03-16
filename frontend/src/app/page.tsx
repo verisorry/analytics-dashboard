@@ -35,25 +35,28 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-12 p-6 h-screen">
-      <div className="w-auto flex flex-col gap-6">
-        <div className="dashboard-header w-full flex items-center justify-between">
-          <div className="dashboard-header-text flex flex-col items-start gap-2">
-            <h1 className="dashboard-title text-4xl font-bold font-dm-sans">
-              Dashboard
-            </h1>
-            <p className="dashboard-subtitle text-lg font-inter">
-              View and filter instrument parameters for different fridges
-            </p>
+    <div className="flex flex-col items-center justify-center w-auto p-6 h-screen ">
+      <div className="w-[80%] flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-6">
+          <div className="dashboard-header w-full flex items-end justify-between">
+            <div className="dashboard-header-text flex flex-col items-start gap-2">
+              <h1 className="dashboard-title text-5xl font-bold font-dm-sans">
+                Dashboard
+              </h1>
+              <p className="dashboard-subtitle text-lg font-inter">
+                View and filter instrument parameters for different fridges
+              </p>
+            </div>
+            <AnalyticsButton />
           </div>
-          <AnalyticsButton />
+
+          <hr className="divider w-full border-t border-neutral-200" />
+
         </div>
-
-        <hr className="divider w-full border-t border-neutral-200" />
-
-      </div>
-      <div className="data-table-container overflow-x-auto w-full max-w-7xl">
-        <DataTable data={data} loading={loading} />
+        <div className="data-table-container w-full overflow-x-auto">
+          <DataTable data={data} loading={loading} />
+        </div>
+        
       </div>
     </div>
   );

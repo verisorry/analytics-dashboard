@@ -11,7 +11,16 @@ interface ButtonProps {
 }
 
 function Button({ text, icon, onClick }: ButtonProps) {
-  return <AntdButton icon={icon} type="primary" onClick={onClick} >
+  return <AntdButton 
+    icon={icon} 
+    type="primary" 
+    onClick={onClick} 
+    style={{
+        fontSize: '14px',
+        padding: '18px 24px',
+        fontFamily: 'var(--font-inter)',
+    }}
+    >
     {text}
     </AntdButton>;
 };
@@ -28,6 +37,7 @@ export default function AnalyticsButton() {
             text="View Analytics"
             icon={<LineChartOutlined />}
             onClick={handleClick}
+            
         />
     )   
 }
