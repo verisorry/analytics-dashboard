@@ -23,7 +23,12 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8000/settings');
+        const response = await axios.get('http://localhost:8000/settings', {
+          params: {
+            page: 1,
+            page_size: 10
+          }
+        });
         const settingsData = response.data.data || [];
         setData(settingsData);
       } catch (error) {
