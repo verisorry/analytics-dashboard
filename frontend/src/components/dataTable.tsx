@@ -20,7 +20,6 @@ interface DataTableProps {
   loading: boolean;
 }
 
-// Define a type for filter dropdown props
 interface CustomFilterDropdownProps {
   setSelectedKeys: (keys: React.Key[]) => void;
   confirm: () => void;
@@ -37,7 +36,6 @@ export default function DataTable({
     order?: 'ascend' | 'descend' | null;
   }>({});
 
-  // Generate filter options from data
   const fridgeIdFilters = [...new Set(data.map(item => item.fridge_id))].map(id => ({
     text: `Fridge ${id}`,
     value: id,
@@ -290,7 +288,7 @@ export default function DataTable({
         rowKey={(record) => `${record.fridge_id}-${record.instrument_name}-${record.timestamp}`}
         onChange={onChange}
         pagination={{hideOnSinglePage: true}}
-        
+        bordered
       />
     </div>
   );

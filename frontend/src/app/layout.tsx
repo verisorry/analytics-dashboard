@@ -16,22 +16,34 @@ export const metadata: Metadata = {
 };
 
 const theme = {
-  "token": {
-    "colorPrimary": "#5a7ea3",
-    "colorInfo": "#5a7ea3",
-    "colorSuccess": "#49d685",
-    "colorWarning": "#f39c12",
-    "colorError": "#e74c3c",
-    "colorLink": "#3498db",
-    "colorTextBase": "#333333",
-    "borderRadius": 4,
-    "fontFamily": "var(--font-inter)",
+  token: {
+    colorPrimary: "#5a7ea3",
+    colorInfo: "#5a7ea3",
+    colorSuccess: "#49d685",
+    colorWarning: "#f39c12",
+    colorError: "#e74c3c",
+    colorLink: "#3498db",
+    colorTextBase: "#333333",
+    borderRadius: 6,
+    fontFamily: "var(--font-inter)",
   },
   components: {
     Table: {
       colorFillAlter: '#EBF5FB',
       colorFillSecondary: '#EBF5FB',
       headerBg: '#BBDDF3',
+    },
+    Card: {
+      fontFamily: "var(--font-dm-sans)",
+      borderRadius: 6,
+      colorBorderSecondary: '#D2D2D2',
+      colorTextHeading: '#1F2B37',
+    },
+    Select: {
+      fontFamily: "var(--font-inter)",
+      colorBorder: '#8AA4BE',
+      hoverBorderColor: '#4A6785',
+      controlHeight: 40,
     },
   },
 };

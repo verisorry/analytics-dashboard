@@ -4,6 +4,8 @@ import AnalyticsButton from "@/components/button";
 import DataTable from "@/components/dataTable";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { BarChartOutlined } from "@ant-design/icons";
 
 interface SettingData {
   fridge_id: number;
@@ -16,7 +18,7 @@ interface SettingData {
 export default function Home() {
   const [data, setData] = useState<SettingData[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,7 +37,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center w-auto p-6 h-screen ">
+    <div className="flex flex-col items-center justify-center w-auto p-6 py-[10%]">
       <div className="w-[80%] flex flex-col gap-6">
         <div className="w-full flex flex-col gap-6">
           <div className="dashboard-header w-full flex items-end justify-between">
@@ -47,7 +49,11 @@ export default function Home() {
                 View and filter instrument parameters for different fridges
               </p>
             </div>
-            <AnalyticsButton />
+            <AnalyticsButton 
+              text="View Analytics"
+              icon={<BarChartOutlined />}
+              onClick={() => router.push("/analytics")}
+            />
           </div>
 
           <hr className="divider w-full border-t border-neutral-200" />
