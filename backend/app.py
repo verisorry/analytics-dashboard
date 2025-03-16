@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Union, Optional
 from pydantic import BaseModel
 import json
@@ -11,6 +12,14 @@ class Settings(BaseModel):
     applied_value: float
     timestamp: int
     
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # load sample data
 def load_data():
     with open("data.json", "r") as f:
