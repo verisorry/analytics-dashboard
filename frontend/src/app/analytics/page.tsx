@@ -44,6 +44,7 @@ export default function Analytics() {
   const [selectedFridge, setSelectedFridge] = useState<string>("All Fridges");
   const [selectedInstrument, setSelectedInstrument] = useState<string>("All Instruments");
   const [selectedParameter, setSelectedParameter] = useState<string>("All Parameters");
+  const [mode, setMode] = useState<string>("Dummy");
   const router = useRouter();
   
   const [stats, setStats] = useState({
@@ -85,23 +86,41 @@ export default function Analytics() {
   }, [selectedFridge, selectedInstrument, selectedParameter]);
 
   useEffect(() => {
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode) {
+      setMode(savedMode);
+    }
+  }, []);
+
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8000/settings');
-        const settingsData = response.data.data || [];
-        setData(settingsData);
+        let response;
         
+        if (mode === "Dummy") {
+          response = await axios.get('http://localhost:8000/dummy');
+        } else if (mode === "Live") {
+          response = await axios.get('http://localhost:8000/live');
+        } else if (mode === "Historical") {
+          response = await axios.get('http://localhost:8000/historical', {
+            params: { page: 1, page_size: 1000 }
+          });
+        }
+        
+        const settingsData = response?.data?.data || [];
+        setData(settingsData);
         calculateStats(settingsData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error(`Error fetching ${mode} data:`, error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [calculateStats]);
+  }, [mode, calculateStats]);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -228,7 +247,7 @@ export default function Analytics() {
       <div className="w-[80%] flex flex-col gap-12">
         <div className="analytics-header flex items-end justify-between">
           <div className="analytics-header-text flex flex-col items-start gap-2">
-            <h1 className="analytics-title text-5xl font-bold">Instrument Analytics</h1>
+            <h1 className="analytics-title text-5xl font-bold">{mode} Instrument Analytics</h1>
             <p className="analytics-subtitle text-lg text-gray-600">View analytics and trends for instrument parameters</p>
           </div>
           <Button 

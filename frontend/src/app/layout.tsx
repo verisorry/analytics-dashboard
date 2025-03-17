@@ -45,6 +45,8 @@ const theme = {
       hoverBorderColor: '#4A6785',
       controlHeight: 40,
     },
+    Segmented: {
+    },
   },
 };
 

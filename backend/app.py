@@ -1,6 +1,6 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Union, Optional
+from typing import List
 from pydantic import BaseModel
 import json
 import uvicorn
@@ -16,6 +16,13 @@ class Settings(BaseModel):
     applied_value: float
     timestamp: int
     
+class LiveData(BaseModel):
+    data: List[Settings]
+    total: int
+    page: int
+    page_size: int
+    has_next: bool
+    
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,14 +33,15 @@ app.add_middleware(
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: dict[str, list[WebSocket]] = {}
+        self.active_connections: list[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
 
     async def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
@@ -41,13 +49,15 @@ class ConnectionManager:
             
 manager = ConnectionManager()
 
-# load sample data
+# load dummy data
 def load_data():
-    with open("data.json", "r") as f:
-        return json.load(f)
+    try:
+        with open("data.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
 
-settings_data = load_data()
-
+# generate random data 
 def random_date():
     start = datetime.now() - timedelta(days=365)
     end = datetime.now()
@@ -57,11 +67,11 @@ def random_date():
     return int(random_date.timestamp())
 
 # generate + broadcast random data
-async def generate_data():
+def generate_data():
     fridge_id = random.randint(1, 10)
     instrument_name = random.choice(["instrument_one", "instrument_two", "instrument_three", "instrument_four", "instrument_five"])
     parameter_name = random.choice(["temperature", "power_level", "current_bias", "voltage", "flux_bias"])
-    applied_value = random.uniform(0, 100)
+    applied_value = round(random.uniform(0, 100), 2)
     
     data = {
         "fridge_id": fridge_id,
@@ -71,49 +81,82 @@ async def generate_data():
         "timestamp": random_date()
     }
     
-    await manager.broadcast(json.dumps(data))
-    await asyncio.sleep(1)
+    return data
 
-# base settings with filters
-@app.get("/settings")
-async def get_settings(
-    page: int = 1,
-    page_size: int = 10,
-):
-    total_items = len(load_data()["data"])
-    start = (page - 1) * page_size
-    end = min(start + page_size, total_items)
-    
+def generate_sample_data(count: int = 5):
     data = []
-    for item in range(start, end):
-        timestamp = random_date()
-        data.append({
-            "fridge_id": random.randint(1, 4),
-            "instrument_name": random.choice(["instrument_one", "instrument_two", "instrument_three", "instrument_four", "instrument_five"]),
-            "parameter_name": random.choice(["temperature", "power_level", "current_bias", "voltage", "flux_bias"]),
-            "applied_value": round(random.uniform(0, 100), 2),
-            "timestamp": timestamp
-        })
+    for _ in range(count):
+        data.append(generate_data())
+    return data
 
+dummy_data = load_data()
+
+def generate_historical_data(count, page=1, page_size=10):
+    data = []
+    
+    now = datetime.now()
+    days = page * 10
+    
+    for _ in range(count):
+        setting = generate_data()
+        time = now - timedelta(days=days - random.randint(0, 9))
+        setting['timestamp'] = int(time.timestamp())
+        data.append(setting)
+        
+    return sorted(data, key=lambda x: x['timestamp'], reverse=True)
+
+# dummy mode 
+@app.get("/dummy")
+async def get_dummy_data():
+    return dummy_data
+
+# live mode
+@app.get("/live")
+async def get_live_data(
+    page: int = Query(1, gt=0),
+    page_size: int = Query(10, gt=0, le=100),
+):
+    data = generate_sample_data(page_size)
+    
     return {
         "data": data,
+        "total": 1000,
         "page": page,
         "page_size": page_size,
-        "total_items": total_items,
-        "total_pages": (total_items + page_size - 1) // page_size
+        "has_next": page * page_size < 1000
     }
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+        
+# historical data mode
+@app.get('/historical', response_model=LiveData)
+async def get_historical_data(
+    page: int = Query(1, gt=0),
+    page_size: int = Query(10, gt=0, le=100),
+):
+    data = generate_historical_data(page_size, page, page_size)
+    total_items = 1000
+    
+    return {
+        "data": data,
+        "total": total_items,
+        "page": page,
+        "page_size": page_size,
+        "has_next": page * page_size < total_items
+    }
+    
+@app.websocket("/ws/live")
+async def live_websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
-        task = asyncio.create_task(generate_data())
         while True:
-            await websocket.receive_text()
+            data = generate_data()
+            data["timestamp"] = int(datetime.now().timestamp())
+            
+            await websocket.send_json(data)
+            await asyncio.sleep(10)
+            
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        task.cancel()
-            
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
