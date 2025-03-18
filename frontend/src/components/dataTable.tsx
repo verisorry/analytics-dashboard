@@ -287,7 +287,7 @@ export default function DataTable({
         loading={loading}
         rowKey={(record) => `${record.fridge_id}-${record.instrument_name}-${record.timestamp}`}
         onChange={onChange}
-        pagination={{hideOnSinglePage: true}}
+        pagination={false}
         bordered
       />
     </div>

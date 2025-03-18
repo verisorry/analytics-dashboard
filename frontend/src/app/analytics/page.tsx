@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Line, Bar } from 'react-chartjs-2';
 import { useWebSocket } from "@/app/WebSocketContext";
+import { useSearchParams } from "next/navigation";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -40,13 +41,16 @@ interface SettingData {
 }
 
 export default function Analytics() {
+  const [mode, setMode] = useState<string>("Dummy");
+
   const [data, setData] = useState<SettingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFridge, setSelectedFridge] = useState<string>("All Fridges");
   const [selectedInstrument, setSelectedInstrument] = useState<string>("All Instruments");
   const [selectedParameter, setSelectedParameter] = useState<string>("All Parameters");
-  const [mode, setMode] = useState<string>("Dummy");
+  
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { liveData, connect, isConnected } = useWebSocket();
   
   const [stats, setStats] = useState({
@@ -88,46 +92,55 @@ export default function Analytics() {
   }, [selectedFridge, selectedInstrument, selectedParameter]);
 
   useEffect(() => {
-    const savedMode = localStorage.getItem('mode');
-    if (savedMode) {
-      setMode(savedMode);
-    }
-  }, []);
+    const initialiseAndFetch = async () => {
+      setLoading(true);
+      const urlMode = searchParams.get('mode');
+      console.log("Analytics: URL mode:", urlMode);
+      if (urlMode) {
+        setMode(urlMode);
+      }
 
-
-  useEffect(() => {
-    const fetchData = async () => {
       try {
-        setLoading(true);
         let response;
-        
-        if (mode === "Dummy") {
+
+        if (urlMode === "Dummy") {
           response = await axios.get('http://localhost:8000/dummy');
           const settingsData = response?.data?.data || [];
           setData(settingsData);
           calculateStats(settingsData);
-        } else if (mode === "Live") {
+
+
+        } else if (urlMode === "Live") {
           connect();
           setData(liveData);
           calculateStats(liveData);
           setLoading(false);
-        } else if (mode === "Historical") {
-          response = await axios.get('http://localhost:8000/historical', {
-            params: { page: 1, page_size: 1000 }
-          });
-          const settingsData = response?.data?.data || [];
-          setData(settingsData);
-          calculateStats(settingsData);
+
+
+        } else if (urlMode === "Historical") {
+          try {
+            const historicalData = localStorage.getItem('historicalData');
+            if (historicalData) {
+              const parsedData = JSON.parse(historicalData);
+              setData(parsedData);
+              calculateStats(parsedData);
+            } else {
+              console.error("Analytics: No historical data found");
+            }
+          } catch (error) {
+            console.error("Analytics: Error loading historical data:", error);
+          }
         }
       } catch (error) {
-        console.error(`Error fetching ${mode} data:`, error);
+        console.error("Analytics: Error fetching data:", error);
+        setData([]);
       } finally {
         setLoading(false);
       }
+      
     };
-
-    fetchData();
-  }, [mode, calculateStats, connect, liveData]);
+    initialiseAndFetch();
+  }, [searchParams, calculateStats, connect, liveData]);
 
   useEffect(() => {
     if (mode === "Live" && liveData.length > 0) {
@@ -260,6 +273,18 @@ export default function Analytics() {
             {mode === "Live" && (
               <p className="text-md text-[#3498DB] font-inter">
                   {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
+              </p>
+            )}
+
+            {mode === "Historical" && (
+              <p className="text-md text-[#3498DB] font-inter">
+                  Historical mode generates random data with infinite scrolling
+              </p>
+            )}
+
+            {mode === "Dummy" && (
+              <p className="text-md text-[#3498DB] font-inter">
+                  Dummy mode uses static data
               </p>
             )}
           </div>

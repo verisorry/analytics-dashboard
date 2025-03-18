@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BarChartOutlined } from "@ant-design/icons";
-import { Button, Segmented } from "antd";
+import { Segmented } from "antd";
 import { useWebSocket } from "@/app/WebSocketContext";
 interface SettingData {
   fridge_id: number;
@@ -59,7 +59,7 @@ export default function Dashboard() {
         }
     }, [mode, connect, disconnect]);
 
-     const fetchHistoricalData = useCallback(async (pageNum: number) => {
+    const fetchHistoricalData = useCallback(async (pageNum: number) => {
         try {
             if (pageNum === 1) {    
                 setLoading(true);
@@ -74,21 +74,15 @@ export default function Dashboard() {
                 }
             });
 
-            if (response.data && response.data.data) {
-                if (pageNum === 1) {
-                    setData(response.data.data);
-                } else {
-                    setData((prevData) => [...prevData, ...response.data.data]);
-                }
-                
-                setHasMoreData(response.data.has_next);
+
+            if (pageNum === 1) {
+                setData(response.data.data);
             } else {
-                console.error("Unexpected response structure:", response.data);
-                if (pageNum === 1) {
-                    setData([]);
-                }
-                setHasMoreData(false);
+                setData((prevData) => [...prevData, ...response.data.data]);
             }
+            
+            setHasMoreData(response.data.has_next);
+
         } catch (error) {
             console.error("Error fetching historical data (page:", pageNum, "):", error);
             if (pageNum === 1) {
@@ -124,34 +118,39 @@ export default function Dashboard() {
         }
     }, [mode, liveData]);
 
-    const handleScroll = useCallback(() => {
-        if (mode !== "Historical" || isLoadingMore || !hasMoreData) return;
-        
-        const scrollHeight = document.documentElement.scrollHeight;
-        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-        const clientHeight = document.documentElement.clientHeight;
-        
-        // If user has scrolled to the bottom (with a small threshold)
-        if (scrollHeight - scrollTop - clientHeight < 200) {
-            setIsLoadingMore(true);
-            fetchHistoricalData(currentPage + 1)
-                .then(() => {
-                    setCurrentPage(prev => prev + 1);
-                })
-                .finally(() => {
-                    setIsLoadingMore(false);
-                });
-        }
-    }, [mode, isLoadingMore, hasMoreData, currentPage, fetchHistoricalData]);
-
     useEffect(() => {
+        let timeout: NodeJS.Timeout;
+
+        const handleScroll = () => {
+            if (mode !== "Historical" || isLoadingMore || !hasMoreData) return;
+
+            clearTimeout(timeout);
+
+            timeout = setTimeout(() => {
+                const scrollHeight = document.documentElement.scrollHeight;
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const clientHeight = document.documentElement.clientHeight;
+                
+                if (scrollHeight - scrollTop - clientHeight < 100) {
+                    setIsLoadingMore(true);
+                    fetchHistoricalData(currentPage + 1)
+                    .then(() => {
+                        setCurrentPage(prev => prev + 1);
+                    })
+                    .finally(() => {
+                        setIsLoadingMore(false);
+                    });
+                }
+            }, 100);
+        }
+
         window.addEventListener('scroll', handleScroll);
         return () => {
             window.removeEventListener('scroll', handleScroll);
+            clearTimeout(timeout);
         };
-    }, [handleScroll]);
-    
-    
+    }, [mode, isLoadingMore, hasMoreData, currentPage, fetchHistoricalData]);
+
     return (
         <div className="w-full flex flex-col gap-6">
             <div className="dashboard-header w-full flex items-end justify-between">
@@ -162,10 +161,23 @@ export default function Dashboard() {
                     <p className="dashboard-subtitle text-lg font-inter">
                         View and filter instrument parameters for different fridges
                     </p>
+
                     {mode === "Live" && (
                     <p className="text-md text-[#3498DB] font-inter">
                         {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
                     </p>
+                    )}
+
+                    {mode === "Historical" && (
+                        <p className="text-md text-[#3498DB] font-inter">
+                            Historical mode generates random data with infinite scrolling
+                        </p>
+                    )}
+
+                    {mode === "Dummy" && (
+                        <p className="text-md text-[#3498DB] font-inter">
+                            Dummy mode uses static data
+                        </p>
                     )}
                 </div>
 
@@ -183,8 +195,13 @@ export default function Dashboard() {
                         text="View Analytics"
                         icon={<BarChartOutlined />}
                         onClick={() => {
-                            localStorage.setItem('mode', mode);
-                            router.push("/analytics")
+                            if (mode === "Historical") {
+                                localStorage.setItem('historicalData', JSON.stringify(data));
+                                console.log("Setting historical data:", data);
+                            } 
+                            router.push(`/analytics?mode=${mode}`);
+                            console.log("Pushing to analytics with mode:", mode);
+
                         }}
                     />
                 </div>
@@ -198,12 +215,10 @@ export default function Dashboard() {
                 {mode === "Historical" && hasMoreData && (
                     <div className="load-more-container flex justify-center my-4">
                         {isLoadingMore ? (
-                            <div className="flex justify-center items-center">Loading more data...</div>
-                        ) : (
-                            <Button onClick={() => fetchHistoricalData(currentPage + 1)}>
-                                Load More
-                            </Button>
-                        )}
+                            <div className="flex justify-center items-center text-[#1A6293] font-inter">Loading more data...</div>
+                            ) : (
+                                <div className="flex justify-center items-center text-[#1A6293] font-inter">Loading more data...</div>
+                            )}
                     </div>
                 )}
             </div>

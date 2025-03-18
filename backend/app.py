@@ -60,12 +60,13 @@ def load_data():
 dummy_data = load_data()
 
 # generate a random timestamp
+_date_range_start = datetime.now() - timedelta(days=365)
+_date_range_end = datetime.now()
+_date_range_diff = (_date_range_end - _date_range_start).total_seconds()
+
 def random_date():
-    start = datetime.now() - timedelta(days=365)
-    end = datetime.now()
-    diff = (end - start).total_seconds()
-    random_seconds = random.randint(0, int(diff))
-    random_date = start + timedelta(seconds=random_seconds)
+    random_seconds = random.randint(0, int(_date_range_diff))
+    random_date = _date_range_start + timedelta(seconds=random_seconds)
     return int(random_date.timestamp())
 
 # generate one random data point
@@ -93,16 +94,11 @@ def generate_sample_data(count: int = 5):
     return data
 
 # generate a page of historical data
-def generate_historical_data(count, page=1):
+def generate_historical_data(count):
     data = []
-    
-    now = datetime.now()
-    days = page * 10
     
     for _ in range(count):
         setting = generate_data()
-        time = now - timedelta(days=days - random.randint(0, 9))
-        setting['timestamp'] = int(time.timestamp())
         data.append(setting)
         
     return sorted(data, key=lambda x: x['timestamp'], reverse=True)
@@ -145,9 +141,9 @@ async def live_websocket_endpoint(websocket: WebSocket):
 @app.get('/historical', response_model=LiveData)
 async def get_historical_data(
     page: int = Query(1, gt=0),
-    page_size: int = Query(10, gt=0, le=100),
+    page_size: int = Query(10, gt=0, le=1000),
 ):
-    data = generate_historical_data(page_size, page, page_size)
+    data = generate_historical_data(page_size)
     total_items = 1000
     
     return {
