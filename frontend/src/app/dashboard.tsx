@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BarChartOutlined } from "@ant-design/icons";
-import { Segmented } from "antd";
-
+import { Button, Segmented } from "antd";
+import { useWebSocket } from "@/app/WebSocketContext";
 interface SettingData {
   fridge_id: number;
   instrument_name: string;
@@ -22,9 +22,19 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     const [hasInitialised, setHasInitialised] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMoreData, setHasMoreData] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
     const router = useRouter();
+    const { liveData, isConnected, connect, disconnect } = useWebSocket();
 
     const fetchData = useCallback(async () => {
+
+        if (mode !== "Live") {
+            disconnect();
+        }
+
         try {
             setLoading(true);
             let response; 
@@ -32,8 +42,11 @@ export default function Dashboard() {
             if (mode === "Dummy") {
                 response = await axios.get('http://localhost:8000/dummy');
             } else if (mode === "Live") {
-                response = await axios.get('http://localhost:8000/live');
+                connect();
+                setLoading(false);
+                return;
             } else if (mode === "Historical") {
+                setCurrentPage(1);
                 await fetchHistoricalData(1);
                 return;
             }
@@ -44,11 +57,16 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
-    }, [mode]);
+    }, [mode, connect, disconnect]);
 
-     const fetchHistoricalData = async (pageNum: number) => {
+     const fetchHistoricalData = useCallback(async (pageNum: number) => {
         try {
-            setLoading(true);
+            if (pageNum === 1) {    
+                setLoading(true);
+            } else {
+                setIsLoadingMore(true);
+            }
+            
             const response = await axios.get('http://localhost:8000/historical', {
                 params: {
                     page: pageNum,
@@ -62,22 +80,29 @@ export default function Dashboard() {
                 } else {
                     setData((prevData) => [...prevData, ...response.data.data]);
                 }
+                
+                setHasMoreData(response.data.has_next);
             } else {
                 console.error("Unexpected response structure:", response.data);
                 if (pageNum === 1) {
                     setData([]);
                 }
+                setHasMoreData(false);
             }
-
-            setLoading(false);
         } catch (error) {
             console.error("Error fetching historical data (page:", pageNum, "):", error);
             if (pageNum === 1) {
                 setData([]);
             }
-            setLoading(false);
+            setHasMoreData(false);
+        } finally {
+            if (pageNum === 1) {
+                setLoading(false);
+            } else {
+                setIsLoadingMore(false);
+            }
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (!hasInitialised) {
@@ -93,19 +118,58 @@ export default function Dashboard() {
         }
     }, [mode, hasInitialised, fetchData]);
 
+    useEffect(() => {
+        if (mode === "Live") {
+            setData(liveData);
+        }
+    }, [mode, liveData]);
+
+    const handleScroll = useCallback(() => {
+        if (mode !== "Historical" || isLoadingMore || !hasMoreData) return;
+        
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const clientHeight = document.documentElement.clientHeight;
+        
+        // If user has scrolled to the bottom (with a small threshold)
+        if (scrollHeight - scrollTop - clientHeight < 200) {
+            setIsLoadingMore(true);
+            fetchHistoricalData(currentPage + 1)
+                .then(() => {
+                    setCurrentPage(prev => prev + 1);
+                })
+                .finally(() => {
+                    setIsLoadingMore(false);
+                });
+        }
+    }, [mode, isLoadingMore, hasMoreData, currentPage, fetchHistoricalData]);
+
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [handleScroll]);
+    
+    
     return (
         <div className="w-full flex flex-col gap-6">
             <div className="dashboard-header w-full flex items-end justify-between">
                 <div className="dashboard-header-text flex flex-col items-start gap-2">
-                <h1 className="dashboard-title text-5xl font-bold font-dm-sans">
-                    Dashboard
-                </h1>
-                <p className="dashboard-subtitle text-lg font-inter">
-                    View and filter instrument parameters for different fridges
-                </p>
+                    <h1 className="dashboard-title text-5xl font-bold font-dm-sans">
+                        Dashboard
+                    </h1>
+                    <p className="dashboard-subtitle text-lg font-inter">
+                        View and filter instrument parameters for different fridges
+                    </p>
+                    {mode === "Live" && (
+                    <p className="text-md text-[#3498DB] font-inter">
+                        {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
+                    </p>
+                    )}
                 </div>
 
-                <div className="flex items-end gap-2">
+                <div className="flex items-end gap-4">
                     <Segmented<string>
                         size="large"
                         options={["Dummy", "Live", "Historical"]}
@@ -130,6 +194,18 @@ export default function Dashboard() {
 
             <div className="data-table-container w-full overflow-x-auto">
                 <DataTable data={data} loading={loading} />
+
+                {mode === "Historical" && hasMoreData && (
+                    <div className="load-more-container flex justify-center my-4">
+                        {isLoadingMore ? (
+                            <div className="flex justify-center items-center">Loading more data...</div>
+                        ) : (
+                            <Button onClick={() => fetchHistoricalData(currentPage + 1)}>
+                                Load More
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

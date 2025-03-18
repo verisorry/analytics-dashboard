@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ConfigProvider } from "antd";
 import '@ant-design/v5-patch-for-react-19';
+import { WebSocketProvider } from "@/app/WebSocketContext";
 import { DM_Sans } from 'next/font/google';
 
 const dmSans = DM_Sans({
@@ -9,7 +10,6 @@ const dmSans = DM_Sans({
   weight: ['400', '500', '700'],
   variable: '--font-dm-sans',
 });
-
 export const metadata: Metadata = {
   title: "Silvia Fang Take Home",
   description: "Silvia Fang Rigetti Take Home",
@@ -56,12 +56,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable}`}>
-      <body
-        className={'font-dm-sans antialiased'}
-      >
+    <html lang="en">
+      <body className={`${dmSans.variable} font-sans`}>
         <ConfigProvider theme={theme}>
-          {children}
+          <WebSocketProvider>
+            {children}
+          </WebSocketProvider>
         </ConfigProvider>
       </body>
     </html>

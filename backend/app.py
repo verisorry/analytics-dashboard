@@ -57,7 +57,9 @@ def load_data():
     except FileNotFoundError:
         return []
 
-# generate random data 
+dummy_data = load_data()
+
+# generate a random timestamp
 def random_date():
     start = datetime.now() - timedelta(days=365)
     end = datetime.now()
@@ -66,7 +68,7 @@ def random_date():
     random_date = start + timedelta(seconds=random_seconds)
     return int(random_date.timestamp())
 
-# generate + broadcast random data
+# generate one random data point
 def generate_data():
     fridge_id = random.randint(1, 10)
     instrument_name = random.choice(["instrument_one", "instrument_two", "instrument_three", "instrument_four", "instrument_five"])
@@ -83,15 +85,15 @@ def generate_data():
     
     return data
 
+# generate a set of random data points
 def generate_sample_data(count: int = 5):
     data = []
     for _ in range(count):
         data.append(generate_data())
     return data
 
-dummy_data = load_data()
-
-def generate_historical_data(count, page=1, page_size=10):
+# generate a page of historical data
+def generate_historical_data(count, page=1):
     data = []
     
     now = datetime.now()
@@ -125,7 +127,20 @@ async def get_live_data(
         "page_size": page_size,
         "has_next": page * page_size < 1000
     }
-        
+
+@app.websocket("/ws/live")
+async def live_websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = generate_data()
+            
+            await websocket.send_json(data)
+            await asyncio.sleep(2)
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
 # historical data mode
 @app.get('/historical', response_model=LiveData)
 async def get_historical_data(
@@ -143,20 +158,6 @@ async def get_historical_data(
         "has_next": page * page_size < total_items
     }
     
-@app.websocket("/ws/live")
-async def live_websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = generate_data()
-            data["timestamp"] = int(datetime.now().timestamp())
-            
-            await websocket.send_json(data)
-            await asyncio.sleep(10)
-            
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -7,6 +7,7 @@ import { DatabaseOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Line, Bar } from 'react-chartjs-2';
+import { useWebSocket } from "@/app/WebSocketContext";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -46,6 +47,7 @@ export default function Analytics() {
   const [selectedParameter, setSelectedParameter] = useState<string>("All Parameters");
   const [mode, setMode] = useState<string>("Dummy");
   const router = useRouter();
+  const { liveData, connect, isConnected } = useWebSocket();
   
   const [stats, setStats] = useState({
     averageValue: 0,
@@ -101,17 +103,22 @@ export default function Analytics() {
         
         if (mode === "Dummy") {
           response = await axios.get('http://localhost:8000/dummy');
+          const settingsData = response?.data?.data || [];
+          setData(settingsData);
+          calculateStats(settingsData);
         } else if (mode === "Live") {
-          response = await axios.get('http://localhost:8000/live');
+          connect();
+          setData(liveData);
+          calculateStats(liveData);
+          setLoading(false);
         } else if (mode === "Historical") {
           response = await axios.get('http://localhost:8000/historical', {
             params: { page: 1, page_size: 1000 }
           });
+          const settingsData = response?.data?.data || [];
+          setData(settingsData);
+          calculateStats(settingsData);
         }
-        
-        const settingsData = response?.data?.data || [];
-        setData(settingsData);
-        calculateStats(settingsData);
       } catch (error) {
         console.error(`Error fetching ${mode} data:`, error);
       } finally {
@@ -120,13 +127,14 @@ export default function Analytics() {
     };
 
     fetchData();
-  }, [mode, calculateStats]);
+  }, [mode, calculateStats, connect, liveData]);
 
   useEffect(() => {
-    if (data.length > 0) {
-      calculateStats(data);
+    if (mode === "Live" && liveData.length > 0) {
+      setData(liveData);
+      calculateStats(liveData);
     }
-  }, [data, calculateStats]);
+  }, [liveData, mode, calculateStats]);
 
   const fridgeOptions = ["All Fridges", ...new Set(data.map(item => item.fridge_id.toString()))];
   const instrumentOptions = ["All Instruments", ...new Set(data.map(item => item.instrument_name))];
@@ -249,6 +257,11 @@ export default function Analytics() {
           <div className="analytics-header-text flex flex-col items-start gap-2">
             <h1 className="analytics-title text-5xl font-bold">{mode} Instrument Analytics</h1>
             <p className="analytics-subtitle text-lg text-gray-600">View analytics and trends for instrument parameters</p>
+            {mode === "Live" && (
+              <p className="text-md text-[#3498DB] font-inter">
+                  {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
+              </p>
+            )}
           </div>
           <Button 
             text="View Dashboard"
