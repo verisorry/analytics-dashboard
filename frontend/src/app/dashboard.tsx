@@ -168,37 +168,37 @@ export default function Dashboard() {
 
     return (
         <div className="w-full flex flex-col gap-6">
-            <div className="dashboard-header w-full flex items-end justify-between">
+            <div className="dashboard-header w-full flex flex-col md:flex-row items-start md:items-end gap-4 md:justify-between">
                 <div className="dashboard-header-text flex flex-col items-start gap-2">
                     <h1 className="dashboard-title text-5xl font-bold font-dm-sans">
                         Dashboard
                     </h1>
-                    <p className="dashboard-subtitle text-lg font-inter">
+                    <p className="dashboard-subtitle text-sm md:text-lg font-inter">
                         View and filter instrument parameters for different fridges
                     </p>
 
                     {mode === "Live" && (
-                    <p className="text-md text-[#3498DB] font-inter">
+                    <p className="text-sm md:text-md text-[#3498DB] font-inter">
                         {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
                     </p>
                     )}
 
                     {mode === "Historical" && (
-                        <p className="text-md text-[#3498DB] font-inter">
+                        <p className="text-sm md:text-md text-[#3498DB] font-inter">
                             Historical mode generates random data with infinite scrolling
                         </p>
                     )}
 
                     {mode === "Dummy" && (
-                        <p className="text-md text-[#3498DB] font-inter">
+                        <p className="text-sm md:text-md text-[#3498DB] font-inter">
                             Dummy mode uses static data
                         </p>
                     )}
                 </div>
 
-                <div className="flex items-end gap-4">
+                <div className="flex items-end justify-between w-full md:w-auto md:gap-4">
                     <Segmented<string>
-                        size="large"
+                        size={window.innerWidth >= 768 ? "large" : "middle"}
                         options={["Dummy", "Live", "Historical"]}
                         onChange={(value) => {
                             setMode(value);
@@ -218,6 +218,7 @@ export default function Dashboard() {
                             console.log("Pushing to analytics with mode:", mode);
 
                         }}
+                        label={window.innerWidth >= 768}
                     />
                 </div>
             </div>

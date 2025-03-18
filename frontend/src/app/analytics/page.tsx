@@ -264,9 +264,9 @@ export default function Analytics() {
   }
 
   return (
-    <div className="analytics-page flex flex-col items-center p-6 py-[10%]">
-      <div className="w-[80%] flex flex-col gap-12">
-        <div className="analytics-header flex items-end justify-between">
+    <div className="analytics-page flex flex-col items-center justify-center w-auto m-6 my-[35%] md:my-[10%]">
+      <div className="w-[90%] md:w-[80%] flex flex-col gap-12">
+        <div className="analytics-header flex flex-col md:flex-row items-start md:items-end gap-6 md:justify-between">
           <div className="analytics-header-text flex flex-col items-start gap-2">
             <h1 className="analytics-title text-5xl font-bold">{mode} Instrument Analytics</h1>
             <p className="analytics-subtitle text-lg text-gray-600">View analytics and trends for instrument parameters</p>
@@ -288,15 +288,20 @@ export default function Analytics() {
               </p>
             )}
           </div>
+          
           <Button 
             text="View Dashboard"
             icon={<DatabaseOutlined />} 
             onClick={handleViewDashboard}
+            label={true}
+            className="w-full md:w-auto"
           />
         </div>
 
+        <hr className="divider w-full border-t border-neutral-200" />
+
         <Spin spinning={loading}>
-          <div className="filter-container grid grid-cols-4 gap-4">
+          <div className="filter-container grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select
               value={selectedFridge}
               onChange={setSelectedFridge}
@@ -314,8 +319,8 @@ export default function Analytics() {
             />
           </div>
 
-          <div className="graph-container grid grid-cols-1 gap-24 mt-12">
-            <div className="stats-container grid grid-cols-4 gap-4">
+          <div className="graph-container grid grid-cols-1 gap-18 mt-12">
+            <div className="stats-container grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <h3 className="text-neutral-600">Average Value</h3>
               <p className="stats-value text-3xl font-bold">{stats.averageValue}</p>
@@ -334,76 +339,79 @@ export default function Analytics() {
             </Card>
             </div>
 
-            <div className="line-chart-container rounded-lg w-full h-fit">
-              {data.length > 0 && (
-                <Line 
-                  data={prepareTimeSeriesData()} 
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false,
+            <div className="line-chart-container">
+              <h2 className="block md:hidden text-3xl font-medium mb-4 font-dm-sans">Value Trends</h2>
+              <div className="line-chart-canvas w-full h-full">
+                {data.length > 0 && (
+                  <Line 
+                    data={prepareTimeSeriesData()} 
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                        title: {
+                          display: false,
+                        },
                       },
-                      title: {
-                        display: false,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                        },
                       },
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                      },
-                    },
-                  }}
-                />
-              )}
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
-          <div className="variable-charts-container grid grid-cols-2 gap-6">
-            <div className="variable-chart-1 p-4 rounded-lg">
-              <h2 className="text-3xl font-medium mb-4 font-dm-sans">Parameter Distribution</h2>
-              {data.length > 0 && (
-                <Bar 
-                  data={prepareParameterDistribution()} 
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        display: false,
+            <div className="variable-charts-container grid grid-cols-1 md:grid-cols-2 gap-18 md:gap-6">
+              <div className="variable-chart-1 md:p-4">
+                <h2 className="text-3xl font-medium mb-4 font-dm-sans">Parameter Distribution</h2>
+                {data.length > 0 && (
+                  <Bar 
+                    data={prepareParameterDistribution()} 
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
                       },
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                        },
                       },
-                    },
-                  }}
-                />
-              )}
-            </div>
+                    }}
+                  />
+                )}
+              </div>
 
-            <div className="variable-chart-2 p-4 rounded-lg">
-              <h2 className="text-3xl font-medium mb-4 font-dm-sans">Fridge Comparison</h2>
-              {data.length > 0 && (
-                <Bar 
-                  data={prepareFridgeComparison()} 
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        display: false,
+              <div className="variable-chart-2 md:p-4">
+                <h2 className="text-3xl font-medium mb-4 font-dm-sans">Fridge Comparison</h2>
+                {data.length > 0 && (
+                  <Bar 
+                    data={prepareFridgeComparison()} 
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
                       },
-                    },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                        },
                       },
-                    },
-                  }}
-                />
-              )}
+                    }}
+                  />
+                )}
+              </div>
             </div>
-          </div>
 
           </div>
           

@@ -99,3 +99,15 @@ body {
   color: var(--color-secondary-600);
 }
 
+.line-chart-canvas {
+  height: 30vh;
+  width: 100%;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .line-chart-canvas {
+    width: 100%;
+    height: 40vh;
+  }
+}
