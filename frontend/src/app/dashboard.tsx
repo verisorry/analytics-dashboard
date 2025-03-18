@@ -204,7 +204,7 @@ export default function Dashboard() {
                     })()}
                 </header>
 
-                <header className="flex flex-col md:flex-row items-start md:items-end justify-between w-full md:w-auto gap-4">
+                <header className="flex flex-col md:hidden items-start justify-between w-full gap-4">
                     <Button 
                         text="View Analytics"
                         icon={<BarChartOutlined />}
@@ -228,6 +228,33 @@ export default function Dashboard() {
                             setMode(value);
                         }}
                         defaultValue={mode}
+                    />
+                </header>
+
+                <header className="hidden md:flex flex-row items-end justify-between w-auto gap-4">
+                    <Segmented<string>
+                        size={window.innerWidth >= 768 ? "large" : "middle"}
+                        options={["Dummy", "Live", "Historical"]}
+                        onChange={(value) => {
+                            setMode(value);
+                        }}
+                        defaultValue={mode}
+                    />
+
+                    <Button 
+                        text="View Analytics"
+                        icon={<BarChartOutlined />}
+                        onClick={() => {
+                            if (mode === "Historical") {
+                                localStorage.setItem('historicalData', JSON.stringify(data));
+                                console.log("Setting historical data:", data);
+                            } 
+                            router.push(`/analytics?mode=${mode}`);
+                            console.log("Pushing to analytics with mode:", mode);
+
+                        }}
+                        label={true}
+                        className="w-full md:w-auto"
                     />
                 </header>
             </header>
