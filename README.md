@@ -1,9 +1,7 @@
 
-<https://www.figma.com/design/2OIuS6N2AdTuLBHEOFCy2L/Silvia-Fang-Rigetti-Take-Home?node-id=1-2&t=72m3eP6DU7hF3NmJ-1>
-
 # Silvia Fang Rigetti Take Home Assessment
 
-Simple overview of use/purpose.
+Check out the frontend design file [here](https://www.figma.com/design/2OIuS6N2AdTuLBHEOFCy2L/Silvia-Fang-Rigetti-Take-Home?node-id=1-2&t=72m3eP6DU7hF3NmJ-1)
 
 ## Description
 
