@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { BarChartOutlined } from "@ant-design/icons";
 import { Segmented } from "antd";
 import { useWebSocket } from "@/app/WebSocketContext";
+import DashboardSkeleton from "@/components/dashboardSkeleton";
 interface SettingData {
   fridge_id: number;
   instrument_name: string;
@@ -26,8 +27,17 @@ export default function Dashboard() {
     const [hasMoreData, setHasMoreData] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+    const [pageLoading, setPageLoading] = useState(true);
+
     const router = useRouter();
     const { liveData, isConnected, connect, disconnect } = useWebSocket();
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPageLoading(false);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
 
     const fetchData = useCallback(async () => {
 
@@ -150,6 +160,11 @@ export default function Dashboard() {
             clearTimeout(timeout);
         };
     }, [mode, isLoadingMore, hasMoreData, currentPage, fetchHistoricalData]);
+    
+    if (pageLoading) {
+        return <DashboardSkeleton />;
+    }
+
 
     return (
         <div className="w-full flex flex-col gap-6">

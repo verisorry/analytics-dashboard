@@ -55,14 +55,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <body className={`${dmSans.variable} font-sans`}>
-        <ConfigProvider theme={theme}>
-          <WebSocketProvider>
-            {children}
-          </WebSocketProvider>
-        </ConfigProvider>
+          <ConfigProvider theme={theme}>
+            <WebSocketProvider>
+              {children}
+            </WebSocketProvider>
+          </ConfigProvider>
       </body>
     </html>
   );
