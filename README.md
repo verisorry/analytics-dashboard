@@ -71,13 +71,13 @@ Common Issues
 ## Features
 
 - Multiple Data Modes:
-    - Dummy Mode: Displays static sample data
-    - Live Mode: Real-time data updates via WebSockets
-    - Historical Mode: Paginated historical data with filtering
+  - Dummy Mode: Displays static sample data
+  - Live Mode: Real-time data updates via WebSockets
+  - Historical Mode: Paginated historical data with filtering
 - Interactive Dashboard:
-    - Data visualization and filtering
-    - Real-time updates
-    - Pagination for historical data
+  - Data visualization and filtering
+  - Real-time updates
+  - Pagination for historical data
 
 ## Project Structure
 
@@ -105,9 +105,9 @@ project-root/
 
 ## Version History
 
-* 0.1
-  * Initial release: basic functionality including dummy data and bonus functionality
-  * See [commit change]() or See [release history]()
+- 0.1
+  - Initial release: basic functionality including dummy data and bonus functionality
+  - See [commit change](https://github.com/verisorry/rigetti-takehome-2025/graphs/commit-activity) or See [release history](https://github.com/verisorry/rigetti-takehome-2025/releases)
 
 ## License
 
