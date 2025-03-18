@@ -2,10 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
-:root {
+@theme {
+
   --background: #FFFFFF;
   --background-secondary: #F2F2F7;
-  
+
   --color-primary-100: #ACBFD1;
   --color-primary-200: #829EBB;
   --color-primary-300: #5A7EA3;
@@ -71,28 +72,32 @@
   --foreground: var(--color-neutral-1000);
   --font-primary: var(--font-dm-sans);
   --font-secondary: var(--font-inter);
-}
 
-.font-dm-sans {
-  font-family: var(--font-dm-sans);
-}
-
-.font-inter {
-  font-family: var(--font-inter);
-}
-
-.dashboard-title, .analytics-title {
-  font-family: var(--font-dm-sans);
-}
-
-.dashboard-subtitle, .analytics-subtitle {
-  font-family: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter);
+}
+
+h1 {
+  font-family: var(--font-dm-sans);
+  font-weight: 700;
+  font-size: var(--font-size-6xl);
+  color: var(--color-neutral-1000);
+  line-height: 1.2;
+}
+
+h2 {
+  font-family: var(--font-inter);
+  font-weight: 400;
+  font-size: var(--font-size-md);
+  color: var(--color-neutral-800);
+}
+
+h2.accent {
+  color: var(--color-accent-300);
 }
 
 .stats-value {
@@ -109,5 +114,9 @@ body {
   .line-chart-canvas {
     width: 100%;
     height: 40vh;
+  }
+
+  h2 {
+    font-size: var(--font-size-lg);
   }
 }

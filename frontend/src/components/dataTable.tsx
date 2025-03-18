@@ -146,7 +146,7 @@ export default function DataTable({
 
   const columns: ColumnsType<SettingData> = [
     {
-      title: 'Fridge ID',
+      title: <span className="whitespace-nowrap py-2">Fridge ID</span>,
       dataIndex: 'fridge_id',
       key: 'fridge_id',
       filters: fridgeIdFilters,
@@ -157,7 +157,7 @@ export default function DataTable({
       sortOrder: sortedInfo.columnKey === 'fridge_id' ? sortedInfo.order : null,
     },
     {
-      title: 'Instrument Name',
+      title: <span className="whitespace-nowrap py-2">Instrument Name</span>,
       dataIndex: 'instrument_name',
       key: 'instrument_name',
       filters: instrumentNameFilters,
@@ -168,7 +168,7 @@ export default function DataTable({
       sortOrder: sortedInfo.columnKey === 'instrument_name' ? sortedInfo.order : null,
     },
     {
-      title: 'Parameter Name',
+      title: <span className="whitespace-nowrap py-2">Parameter Name</span>,
       dataIndex: 'parameter_name',
       key: 'parameter_name',
       filters: parameterNameFilters,
@@ -179,7 +179,7 @@ export default function DataTable({
       sortOrder: sortedInfo.columnKey === 'parameter_name' ? sortedInfo.order : null,
     },
     {
-      title: 'Applied Value',
+      title: <span className="whitespace-nowrap py-2">Applied Value</span>,
       dataIndex: 'applied_value',
       key: 'applied_value',
       filterDropdown: valueFilterDropdown,
@@ -195,7 +195,7 @@ export default function DataTable({
       sortOrder: sortedInfo.columnKey === 'applied_value' ? sortedInfo.order : null,
     },
     {
-      title: 'Timestamp',
+      title: <span className="whitespace-nowrap py-2">Timestamp</span>,
       dataIndex: 'timestamp',
       key: 'timestamp',
       filterDropdown: timeFilterDropdown,

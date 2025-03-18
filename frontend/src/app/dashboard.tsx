@@ -1,6 +1,6 @@
 'use client';
 
-import AnalyticsButton from "@/components/button";
+import Button from "@/components/button";
 import DataTable from "@/components/dataTable";
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
@@ -167,46 +167,45 @@ export default function Dashboard() {
 
 
     return (
-        <div className="w-full flex flex-col gap-6">
-            <div className="dashboard-header w-full flex flex-col md:flex-row items-start md:items-end gap-4 md:justify-between">
-                <div className="dashboard-header-text flex flex-col items-start gap-2">
-                    <h1 className="dashboard-title text-5xl font-bold font-dm-sans">
+        <main className="w-full flex flex-col gap-6">
+            <header className="dashboard-header w-full flex flex-col md:flex-row items-start md:items-end gap-4 md:justify-between">
+                <header className="dashboard-header-text flex flex-col items-start gap-2">
+                    <h1 className="dashboard-title md:my-2">
                         Dashboard
                     </h1>
-                    <p className="dashboard-subtitle text-sm md:text-lg font-inter">
+                    
+                    <h2 className="dashboard-subtitle">
                         View and filter instrument parameters for different fridges
-                    </p>
+                    </h2>
 
-                    {mode === "Live" && (
-                    <p className="text-sm md:text-md text-[#3498DB] font-inter">
-                        {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
-                    </p>
-                    )}
+                    {(() => {
+                        switch (mode) {
+                        case "Live":
+                            return (
+                            <h2 className="accent">
+                                {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
+                            </h2>
+                            );
+                        case "Historical":
+                            return (
+                            <h2 className="accent">
+                                Historical mode generates random data with infinite scrolling
+                            </h2>
+                            );
+                        case "Dummy":
+                            return (
+                            <h2 className="accent">
+                                Dummy mode uses static data
+                            </h2>
+                            );
+                        default:
+                            return null;
+                        }
+                    })()}
+                </header>
 
-                    {mode === "Historical" && (
-                        <p className="text-sm md:text-md text-[#3498DB] font-inter">
-                            Historical mode generates random data with infinite scrolling
-                        </p>
-                    )}
-
-                    {mode === "Dummy" && (
-                        <p className="text-sm md:text-md text-[#3498DB] font-inter">
-                            Dummy mode uses static data
-                        </p>
-                    )}
-                </div>
-
-                <div className="flex items-end justify-between w-full md:w-auto md:gap-4">
-                    <Segmented<string>
-                        size={window.innerWidth >= 768 ? "large" : "middle"}
-                        options={["Dummy", "Live", "Historical"]}
-                        onChange={(value) => {
-                            setMode(value);
-                        }}
-                        defaultValue={mode}
-                        
-                    />
-                    <AnalyticsButton 
+                <header className="flex flex-col md:flex-row items-start md:items-end justify-between w-full md:w-auto gap-4">
+                    <Button 
                         text="View Analytics"
                         icon={<BarChartOutlined />}
                         onClick={() => {
@@ -218,26 +217,37 @@ export default function Dashboard() {
                             console.log("Pushing to analytics with mode:", mode);
 
                         }}
-                        label={window.innerWidth >= 768}
+                        label={true}
+                        className="w-full md:w-auto"
                     />
-                </div>
-            </div>
+
+                    <Segmented<string>
+                        size={window.innerWidth >= 768 ? "large" : "middle"}
+                        options={["Dummy", "Live", "Historical"]}
+                        onChange={(value) => {
+                            setMode(value);
+                        }}
+                        defaultValue={mode}
+                    />
+                </header>
+            </header>
 
             <hr className="divider w-full border-t border-neutral-200" />
 
-            <div className="data-table-container w-full overflow-x-auto">
+            <section className="data-table-container w-full overflow-x-auto">
                 <DataTable data={data} loading={loading} />
 
                 {mode === "Historical" && hasMoreData && (
-                    <div className="load-more-container flex justify-center my-4">
+                    <section
+                        className="load-more-container flex justify-center my-4">
                         {isLoadingMore ? (
-                            <div className="flex justify-center items-center text-[#1A6293] font-inter">Loading more data...</div>
+                            <div className="flex justify-center items-center text-accent-500 font-inter">Loading more data...</div>
                             ) : (
-                                <div className="flex justify-center items-center text-[#1A6293] font-inter">Loading more data...</div>
+                                <div className="flex justify-center items-center text-accent-500 font-inter">Loading more data...</div>
                             )}
-                    </div>
+                    </section>
                 )}
-            </div>
-        </div>
+            </section>
+        </main>
     );
 }

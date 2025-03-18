@@ -264,30 +264,39 @@ export default function Analytics() {
   }
 
   return (
-    <div className="analytics-page flex flex-col items-center justify-center w-auto m-6 my-[35%] md:my-[10%]">
-      <div className="w-[90%] md:w-[80%] flex flex-col gap-12">
-        <div className="analytics-header flex flex-col md:flex-row items-start md:items-end gap-6 md:justify-between">
-          <div className="analytics-header-text flex flex-col items-start gap-2">
-            <h1 className="analytics-title text-5xl font-bold">{mode} Instrument Analytics</h1>
-            <p className="analytics-subtitle text-lg text-gray-600">View analytics and trends for instrument parameters</p>
-            {mode === "Live" && (
-              <p className="text-md text-[#3498DB] font-inter">
-                  {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
-              </p>
-            )}
-
-            {mode === "Historical" && (
-              <p className="text-md text-[#3498DB] font-inter">
-                  Historical mode generates random data with infinite scrolling
-              </p>
-            )}
-
-            {mode === "Dummy" && (
-              <p className="text-md text-[#3498DB] font-inter">
-                  Dummy mode uses static data
-              </p>
-            )}
-          </div>
+    <main className="analytics-page flex flex-col items-center justify-center w-auto m-6 my-[35%] md:my-[10%]">
+      <section className="w-[90%] md:w-[80%] flex flex-col gap-12">
+        <header className="analytics-header flex flex-col md:flex-row items-start md:items-end gap-6 md:justify-between">
+          <header className="analytics-header-text flex flex-col items-start gap-2">
+            <h1 className="analytics-title md:my-2">{mode} Instrument Analytics</h1>
+            
+            <h2 className="analytics-subtitle">View analytics and trends for instrument parameters</h2>
+            
+            {(() => {
+              switch (mode) {
+              case "Live":
+                return (
+                  <h2 className="accent">
+                    {isConnected ? "Connected: Data updates in real-time every 2 seconds" : "Connecting to live data..."}
+                  </h2>
+                );
+              case "Historical":
+                return (
+                  <h2 className="accent">
+                    Historical mode generates random data with infinite scrolling
+                  </h2>
+                );
+              case "Dummy":
+                return (
+                  <h2 className="accent">
+                    Dummy mode uses static data
+                  </h2>
+                );
+              default:
+                return null;
+              }
+            })()}
+          </header>
           
           <Button 
             text="View Dashboard"
@@ -296,12 +305,12 @@ export default function Analytics() {
             label={true}
             className="w-full md:w-auto"
           />
-        </div>
+        </header>
 
         <hr className="divider w-full border-t border-neutral-200" />
 
         <Spin spinning={loading}>
-          <div className="filter-container grid grid-cols-1 md:grid-cols-4 gap-4">
+          <section className="filter-container grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select
               value={selectedFridge}
               onChange={setSelectedFridge}
@@ -317,10 +326,10 @@ export default function Analytics() {
               onChange={setSelectedParameter}
               options={parameterOptions.map(parameter => ({ value: parameter, label: parameter }))}
             />
-          </div>
+          </section>
 
-          <div className="graph-container grid grid-cols-1 gap-18 mt-12">
-            <div className="stats-container grid grid-cols-2 md:grid-cols-4 gap-4">
+          <section className="graph-container grid grid-cols-1 gap-18 mt-12">
+            <section className="stats-container grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <h3 className="text-neutral-600">Average Value</h3>
               <p className="stats-value text-3xl font-bold">{stats.averageValue}</p>
@@ -337,9 +346,9 @@ export default function Analytics() {
               <h3 className="text-neutral-600">Total Records</h3>
               <p className="stats-value text-3xl font-bold">{stats.totalRecords}</p>
             </Card>
-            </div>
+            </section>
 
-            <div className="line-chart-container">
+            <section className="line-chart-container">
               <h2 className="block md:hidden text-3xl font-medium mb-4 font-dm-sans">Value Trends</h2>
               <div className="line-chart-canvas w-full h-full">
                 {data.length > 0 && (
@@ -365,10 +374,10 @@ export default function Analytics() {
                   />
                 )}
               </div>
-            </div>
+            </section>
 
-            <div className="variable-charts-container grid grid-cols-1 md:grid-cols-2 gap-18 md:gap-6">
-              <div className="variable-chart-1 md:p-4">
+            <section className="variable-charts-container grid grid-cols-1 md:grid-cols-2 gap-18 md:gap-6">
+              <section className="variable-chart-1 md:p-4">
                 <h2 className="text-3xl font-medium mb-4 font-dm-sans">Parameter Distribution</h2>
                 {data.length > 0 && (
                   <Bar 
@@ -388,7 +397,7 @@ export default function Analytics() {
                     }}
                   />
                 )}
-              </div>
+              </section>
 
               <div className="variable-chart-2 md:p-4">
                 <h2 className="text-3xl font-medium mb-4 font-dm-sans">Fridge Comparison</h2>
@@ -411,14 +420,12 @@ export default function Analytics() {
                   />
                 )}
               </div>
-            </div>
+            </section>
 
-          </div>
+          </section>
           
-
-         
         </Spin>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
