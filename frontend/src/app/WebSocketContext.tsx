@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-
+import { apiUrl } from '@/config';
 interface SettingData {
   fridge_id: number;
   instrument_name: string;
@@ -34,7 +34,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
   const connect = () => {
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
     
-    const socket = new WebSocket('ws://localhost:8000/ws/live');
+    const socket = new WebSocket(`${apiUrl}/ws/live`);
     socketRef.current = socket;
     
     socket.onopen = () => {

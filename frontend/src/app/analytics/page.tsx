@@ -9,6 +9,7 @@ import axios from "axios";
 import { Line, Bar } from 'react-chartjs-2';
 import { useWebSocket } from "@/app/WebSocketContext";
 import { useSearchParams } from "next/navigation";
+import { apiUrl } from "@/config";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -104,7 +105,7 @@ export default function Analytics() {
         let response;
 
         if (urlMode === "Dummy") {
-          response = await axios.get('http://localhost:8000/dummy');
+          response = await axios.get(`${apiUrl}/dummy`);
           const settingsData = response?.data?.data || [];
           setData(settingsData);
           calculateStats(settingsData);

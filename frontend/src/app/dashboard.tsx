@@ -9,6 +9,7 @@ import { BarChartOutlined } from "@ant-design/icons";
 import { Segmented } from "antd";
 import { useWebSocket } from "@/app/WebSocketContext";
 import DashboardSkeleton from "@/components/dashboardSkeleton";
+import { apiUrl } from "@/config";
 interface SettingData {
   fridge_id: number;
   instrument_name: string;
@@ -50,7 +51,7 @@ export default function Dashboard() {
             let response; 
 
             if (mode === "Dummy") {
-                response = await axios.get('http://localhost:8000/dummy');
+                response = await axios.get(`${apiUrl}/dummy`);
             } else if (mode === "Live") {
                 connect();
                 setLoading(false);
@@ -77,7 +78,7 @@ export default function Dashboard() {
                 setIsLoadingMore(true);
             }
             
-            const response = await axios.get('http://localhost:8000/historical', {
+            const response = await axios.get(`${apiUrl}/historical`, {
                 params: {
                     page: pageNum,
                     page_size: 10
