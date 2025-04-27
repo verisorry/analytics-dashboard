@@ -1,7 +1,7 @@
 
 # Testing Data Analytics Dashboard
 
-Check out the frontend design file [here](https://www.figma.com/design/2OIuS6N2AdTuLBHEOFCy2L/Silvia-Fang-Rigetti-Take-Home?node-id=1-2&t=72m3eP6DU7hF3NmJ-1)
+Check out the frontend design file [here](https://www.figma.com/design/2OIuS6N2AdTuLBHEOFCy2L/Analytics-Dashboard?node-id=1-2&t=cbdVP4sBwZyMevYq-1)
 
 ## Description
 
@@ -20,8 +20,8 @@ This project is a full-stack application that displays and manages instrument da
 1. Clone the repository:
 
     ```zsh
-    git clone https://github.com/verisorry/rigetti-takehome-2025.git
-    cd rigetti-takehome-2025
+    git clone https://github.com/verisorry/analytics-dashboard.git
+    cd analytics-dashboard
     ```
 
 2. Install backend dependencies:
@@ -107,7 +107,7 @@ project-root/
 
 - 0.1
   - Initial release: basic functionality including dummy data and bonus functionality
-  - See [commit change](https://github.com/verisorry/rigetti-takehome-2025/graphs/commit-activity) or See [release history](https://github.com/verisorry/rigetti-takehome-2025/releases)
+  - See [commit change](https://github.com/verisorry/analytics-dashboard/graphs/commit-activity) or See [release history](https://github.com/verisorry/analytics-dashboard/releases)
 
 ## License
 
