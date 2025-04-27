@@ -1,5 +1,5 @@
 
-# Silvia Fang Rigetti Take Home Assessment
+# Testing Data Analytics Dashboard
 
 Check out the frontend design file [here](https://www.figma.com/design/2OIuS6N2AdTuLBHEOFCy2L/Silvia-Fang-Rigetti-Take-Home?node-id=1-2&t=72m3eP6DU7hF3NmJ-1)
 
@@ -111,4 +111,4 @@ project-root/
 
 ## License
 
-This project is created as a take-home assessment for Rigetti Computing.
+This project was created for Rigetti Computing.
